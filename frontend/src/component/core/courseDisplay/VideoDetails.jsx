@@ -3,10 +3,12 @@ import { useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Player } from 'video-react';
+import "../../../../node_modules/video-react/dist/video-react.css"
+
 import { FaCirclePlay } from "react-icons/fa6";
 import Iconbtn from '../../common/Iconbtn';
-import { markLectureAsComplete } from "../../../services/operation/courseApi"
-import {updateCompletedLectures} from "../../../slices/courseDetailSlice"
+import { markLectureAsComplete,fetchCourseDetailsRedux } from "../../../services/operation/courseApi"
+import {updateCompletedLectures,clearCourseDetails} from "../../../slices/courseDetailSlice"
 
 const VideoDetails = () => {
   const{courseId,sectionId,subSectionId}=useParams();
@@ -27,19 +29,31 @@ const VideoDetails = () => {
 
   useEffect(()=>{
     ;(()=>{
-      if(!courseSectionData.length){
-        console.log(courseSectionData.length);
-      return ;
-      }
+      // if(!courseSectionData.length){
+      //   console.log(courseSectionData.length);
+      // return ;
+      // }
       if(!courseId && !sectionId && !subSectionId){
         navigate("/dashboard/enrolled-courses")
       }
+      if (!courseSectionData || courseSectionData.length === 0) return;
       else{
         
-        const filterSecData=courseSectionData.filter((data)=> data._id===sectionId)
+        const filterSecData=courseSectionData?.filter((data)=> data._id===sectionId)
+        console.log("Filtered Section:", filterSecData);
+       console.log("Subsections:", filterSecData[0]?.subSection);
+        if (!filterSecData || !Array.isArray(filterSecData[0].subSection)) {
+          console.log("Section or subSection data not found.");
+          return;
+        }
+        console.log("AA",courseSectionData);
 
-        const filterSubsecData=filterSecData[0].subSection.filter
-        ((data)=>data._id===subSectionId)
+        const filterSubsecData=filterSecData[0].
+        subSection?.filter((data)=> data._id===subSectionId)
+        if(!filterSubsecData){
+          console.warn("Subsection not found.");
+      return;
+        }
         
 
         setVideoData(filterSubsecData[0])
@@ -48,8 +62,15 @@ const VideoDetails = () => {
       }
 
     })()
-  },[courseSectionData, courseEntireData, location.pathname])
-  
+  }, [courseSectionData, courseId, sectionId, subSectionId]);
+  // },[courseSectionData, courseEntireData, location.pathname])
+
+
+  useEffect(() => {
+    // dispatch(clearCourseDetails()); // Only if you have such an action
+    dispatch(fetchCourseDetailsRedux(courseId)); // Trigger fetch for new course
+  }, [courseId]);
+  console.log("location.pathname",location.pathname);
 
   const firstVideo=()=>{
 
@@ -122,6 +143,7 @@ const VideoDetails = () => {
     }
     setLoading(false)
   }
+  
   // return (
   //   <div className="h-full w-full flex flex-col px-2 pb-4">
   //     {
@@ -200,29 +222,37 @@ const VideoDetails = () => {
         !videoData ? (
           <div>No Data Found</div>
         ) : (
-          <div className="h-[calc(100vh-3.5rem)] w-full bg-richblack-900 flex items-center justify-center relative">
-          <div className="w-[90%] max-w-[1000px] aspect-video relative">
+          <div className="h-[calc(100vh-4.5rem)] w-full bg-richblack-900 flex items-center justify-center ">
+          <div className="h-full flex-grow flex items-center justify-center bg-richblack-900">
+          <div className="h-full w-full relative">
+          {/* <div className="w-full max-w-[1000px] aspect-video relative"> */}
             <Player
               ref={playerRef}
               playsInline
+              fluid={false}
+              height="100%"
+              width="100%"
               onEnded={() => setVideoEnded(true)}
               src={videoData?.videoUrl}
-              className="w-full h-full rounded-md"
+              className="w-full h-full rounded-md object-contain"
             >
               <FaCirclePlay />
               {
                 videoEnded && (
-                  <div className="absolute bottom-6 left-6 z-10 space-x-4">
+                  <div className="absolute bottom-[50%] left-[50%] z-10 space-x-4 flex flex-col gap-3">
                     {
                       !completedLectures.includes(subSectionId) && (
+                        
                         <Iconbtn
                           disabled={loading}
                           onclick={() => lectureCompleteHandler()}
-                          text={!loading ? "Mark As Completed" : "Loading.."} />
+                          text={!loading ? "Mark As Completed" : "Loading.."}
+                           />
                       )
                     }
         
                     <Iconbtn
+                    className="top-6"
                       disabled={loading}
                       onclick={() => {
                         if (playerRef?.current) {
@@ -257,6 +287,7 @@ const VideoDetails = () => {
                 )
               }
             </Player>
+          </div>
           </div>
         </div>
         

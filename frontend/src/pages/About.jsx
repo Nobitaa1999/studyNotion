@@ -7,7 +7,7 @@ import {LearningGrid} from '../data/aboutLearningGrid.js'
 import CTAButton from '../component/core/homePage/CTAButton'
 import About_Form from '../component/core/homePage/About_Form'
 import Footer from '../component/common/Footer'
-
+import ReviewSlider from '../component/common/ReviewSlider';
 const About = () => {
   return (
     <div className='text-white flex flex-col mx-auto items-center '>
@@ -118,6 +118,7 @@ const About = () => {
       <section>
         <div className='text-3xl text-white font-medium text-center'>Review from other lerner</div>
       </section>
+      <ReviewSlider/>
       <Footer/>
 
     </div>

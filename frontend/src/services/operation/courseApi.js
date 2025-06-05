@@ -1,7 +1,12 @@
 import { apiConnector } from "../apiconnector"
 import { coursesEndPoints,categories } from "../apis"
 import { toast } from "react-hot-toast"
-
+import {
+  setCourseSectionData,
+  setEntireCourseData,
+  setTotalNoOfLectures,
+  setCompletedLectures,
+} from "../../slices/courseDetailSlice"
 const { GET_INSTRUCTOR_COURSES_API,DELETE_COURSE_API,CREATE_COURSE_API,EDIT_COURSE_API,CREATE_SECTION_API,UPDATE_SECTION_API,DELETE_SUBSECTION_API,DELETE_SECTION_API,CREATE_SUBSECTION_API,UPDATE_SUBSECTION_API, GET_FULL_COURSE_DETAILS_AUTHENTICATED,GET_ALL_COURSES,FETCH_COURSE_DETAILS,CREATE_RATING_API,LECTURE_COMPLETION_API, } = coursesEndPoints;
 const {CATAGORIES_API}= categories;
 
@@ -375,4 +380,45 @@ export const markLectureAsComplete = async (data, token) => {
   }
   toast.dismiss(toastId)
   return result
+}
+
+
+
+export const fetchCourseDetailsRedux = (courseId) => {
+  return async (dispatch) => {
+    const toastId = toast.loading("Loading course details...")
+
+    try {
+      const response = await apiConnector("POST", FETCH_COURSE_DETAILS, {
+        courseId,
+      })
+
+      if (!response?.data?.success) {
+        throw new Error(response.data.message)
+      }
+            
+      const courseDetails = response?.data?.courseDetail
+      const completedVideos = response?.data?.data?.completedVideos || []
+      
+      dispatch(setEntireCourseData(courseDetails))
+      dispatch(setCourseSectionData(courseDetails.courseContent))
+      dispatch(setTotalNoOfLectures(getTotalLectures(courseDetails.courseContent)))
+      dispatch(setCompletedLectures(completedVideos))
+
+    } catch (error) {
+      console.error("Redux Thunk Error - fetchCourseDetailsRedux:", error)
+      console.log("haii");
+      toast.error("Could not load course detailss.")
+    } finally {
+      toast.dismiss(toastId)
+    }
+  }
+}
+
+const getTotalLectures = (courseContent) => {
+  let total = 0
+  courseContent.forEach(section => {
+    total += section.subSection.length
+  })
+  return total
 }

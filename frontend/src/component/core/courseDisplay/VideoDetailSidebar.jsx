@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { IoIosArrowBack } from "react-icons/io";
 import { FaAngleUp,FaAngleDown } from "react-icons/fa";
-
-
+import { fetchCourseDetailsRedux } from "../../../services/operation/courseApi"
+import {clearCourseDetails} from "../../../slices/courseDetailSlice"
 const VideoDetailSidebar = ({ setReviewModal }) => {
   const [activeStatus, setActiveStatus] = useState("");
   const [videoBarActive, setVideoBarActive] = useState("")
   const navigate = useNavigate();
   const { sectionId, subSectionId } = useParams();
+  const dispatch=useDispatch()
   const location = useLocation()
   const { courseSectionData,
     courseEntireData,
@@ -41,16 +42,23 @@ const VideoDetailSidebar = ({ setReviewModal }) => {
 
     })()
   }, [courseSectionData, courseEntireData, location.pathname])
-  // console.log("sec",courseEntireData);
+  const handleCourseBack=()=>{
+    dispatch(clearCourseDetails());
+    navigate("/dashboard/enrolled-courses");
 
+  }
+  // console.log("sec",courseEntireData);
+  // console.log("aa", courseSectionData[0]?.subSection);
   return (
     <div className='flex min-w-[250px] text-white flex-col border-r-[1px] border-r-richblack-850 h-[calc(100vh-3.5rem)] bg-richblack-700 '>
       
       <div className='flex flex-col    py-2 px-4'>
         <div className='flex justify-between items-center '>
-        <div className='text-md font-medium p-2 rounded-full bg-slate-500' onClick={() => {
-          navigate("/dashboard/enrolled-courses");
-        }}>
+        <div className='text-md font-medium p-2 rounded-full bg-slate-500' 
+        // onClick={() => {
+        //   navigate("/dashboard/enrolled-courses");
+        // }}
+          onClick={handleCourseBack}>
           <IoIosArrowBack />
         </div>
         <div className='p-2 bg-yellow-400 text-black font-semibold rounded-md '

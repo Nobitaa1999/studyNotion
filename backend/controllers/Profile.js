@@ -110,7 +110,7 @@ exports.updateProfile=async(req,res)=>{
             })
         }
         const profileId=updatedUser.additionalDetail;
-        // const profileId=updatedUser.profile;
+             // const profileId=updatedUser.profile;
         const updatedUserProfile=await Profile.findByIdAndUpdate(profileId,
                                                                     {
                                                                         $set:{
